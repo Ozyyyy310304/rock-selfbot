@@ -3,12 +3,17 @@ const { Client } = require("discord.js-selfbot-v13");
 const fs = require("fs");
 const axios = require("axios");
 
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
+// Coba baca token dari config.json
+let config;
+try {
+    config = require("./config.json");
+} catch (error) {
+    console.error("config.json tidak ditemukan. Pastikan file config.json sudah ada di root project.");
+    process.exit(1);
+}
 
-rl.question("Masukkan token bot Anda: ", (token) => {
+// Fungsi untuk memulai bot
+function startBot(token) {
     const client = new Client();
     const commands = [];
     const prefix = "!"; // Ganti sesuai kebutuhan
@@ -33,13 +38,31 @@ rl.question("Masukkan token bot Anda: ", (token) => {
     });
 
     // Load command files
-    fs.readdirSync("./commands").filter(file => file.endsWith(".js")).forEach(file => {
-        const command = require(`./commands/${file}`);
-        commands.push(command);
-        console.log(`Loaded command: ${command.name}`);
-    });
+    fs.readdirSync("./commands")
+      .filter(file => file.endsWith(".js"))
+      .forEach(file => {
+          const command = require(`./commands/${file}`);
+          commands.push(command);
+          console.log(`Loaded command: ${command.name}`);
+      });
 
-    client.login(token)
-        .then(() => rl.close()) // Menutup input setelah login sukses
-        .catch(console.error);
-});
+    client.login(token).catch(console.error);
+}
+
+// Jika token sudah ada di config.json (tidak kosong), gunakan token tersebut
+if (config.BOT_TOKEN && config.BOT_TOKEN.trim() !== "") {
+    startBot(config.BOT_TOKEN);
+} else {
+    // Jika belum ada token, minta input dari terminal
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    rl.question("Masukkan token bot Anda: ", (inputToken) => {
+        // Simpan token ke config.json agar tidak perlu input ulang di sesi berikutnya
+        config.BOT_TOKEN = inputToken;
+        fs.writeFileSync("./config.json", JSON.stringify(config, null, 4));
+        rl.close();
+        startBot(inputToken);
+    });
+}
