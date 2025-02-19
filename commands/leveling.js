@@ -1,8 +1,8 @@
 let isStopped = false; // Variabel global untuk menghentikan proses
 
 module.exports = {
-    name: 'hi',
-    description: 'Mengirim hi, woi, hm, atau oh secara acak sebanyak 50 kali dengan jeda 13 detik.',
+    name: 'leveling',
+    description: 'Mengirim hi, woi, hm, atau oh secara acak sebanyak 50 kali dengan jeda 13 detik untuk grinding level.',
     async execute(channel, message, client, args) {
         isStopped = false;
         const texts = [
