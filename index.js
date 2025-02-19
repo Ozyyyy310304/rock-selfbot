@@ -12,7 +12,6 @@ rl.question("Masukkan token bot Anda: ", (token) => {
     const client = new Client();
     const commands = [];
     const prefix = "!"; // Ganti sesuai kebutuhan
-    const allowedUserIDs = ["1234567890"]; // Ganti dengan ID yang diizinkan
 
     client.on("ready", () => {
         console.log(`Logged in as ${client.user.tag}`);
@@ -27,10 +26,8 @@ rl.question("Masukkan token bot Anda: ", (token) => {
         const command = commands.find(cmd => cmd.name === commandName);
         
         if (!command) return;
-        if (!allowedUserIDs.includes(message.author.id)) {
-            return message.channel.send("You are not allowed to use this command.").catch(console.error);
-        }
 
+        // Eksekusi command tanpa batasan user
         command.execute(message.channel, message, client, args);
         console.log(`Executed command: ${commandName} ✅`);
     });
@@ -42,6 +39,7 @@ rl.question("Masukkan token bot Anda: ", (token) => {
         console.log(`Loaded command: ${command.name}`);
     });
 
-    client.login(token).catch(console.error);
-    rl.close();
+    client.login(token)
+        .then(() => rl.close()) // Menutup input setelah login sukses
+        .catch(console.error);
 });
