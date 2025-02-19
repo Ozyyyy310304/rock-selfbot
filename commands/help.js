@@ -28,7 +28,7 @@ module.exports = {
                 }
             });
 
-            helpMessage += "\n:man_technologist: *Created by devrock*";
+            helpMessage += "\n:man_technologist: *Created by ozyriel nathaniel*";
 
             // Bagi pesan jika terlalu panjang (Discord punya batasan 2000 karakter per pesan)
             const messages = helpMessage.match(/[\s\S]{1,2000}/g);
