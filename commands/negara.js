@@ -2,7 +2,7 @@ let isStopped = false; // Variabel global untuk menghentikan proses
 
 module.exports = {
     name: 'negara',
-    description: 'Menyebutkan 195 nama negara dengan cooldown 1 detik.',
+    description: 'Menyebutkan 195 nama negara secara acak dengan cooldown 1 detik.',
     async execute(channel, message, client, args) {
         isStopped = false;
 
@@ -36,9 +36,12 @@ module.exports = {
             "Vietnam", "Yemen", "Zambia", "Zimbabwe"
         ];
 
-        for (let i = 0; i < negaraList.length; i++) {
+        // Acak urutan daftar negara
+        const shuffledNegara = negaraList.sort(() => Math.random() - 0.5);
+
+        for (let i = 0; i < shuffledNegara.length; i++) {
             if (isStopped) return;
-            await channel.send(negaraList[i]);
+            await channel.send(shuffledNegara[i]);
             await new Promise(resolve => setTimeout(resolve, 1000)); // Cooldown 1 detik
         }
     },
