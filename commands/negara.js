@@ -6,13 +6,11 @@ module.exports = {
     async execute(channel, message, client, args) {
         isStopped = false;
 
-        // Hapus pesan command setelah dieksekusi
+        // Hapus pesan command setelah dieksekusi (stealth mode)
         if (message.deletable) {
             try {
                 await message.delete();
-            } catch (err) {
-                console.error("Gagal menghapus pesan:", err);
-            }
+            } catch (err) {}
         }
 
         const negaraList = [
@@ -40,19 +38,19 @@ module.exports = {
 
         for (let i = 0; i < negaraList.length; i++) {
             if (isStopped) return;
-            await channel.send(randomText);
+            await channel.send(negaraList[i]);
             await new Promise(resolve => setTimeout(resolve, 1000)); // Cooldown 1 detik
         }
     },
+    
     stop(message) {
         isStopped = true;
-        // Hapus pesan stop command
+        
+        // Hapus pesan command stop (stealth mode)
         if (message.deletable) {
             try {
                 message.delete();
-            } catch (err) {
-                console.error("Gagal menghapus pesan stop command:", err);
-            }
+            } catch (err) {}
         }
     }
 };
