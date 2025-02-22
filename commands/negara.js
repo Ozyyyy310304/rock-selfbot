@@ -40,7 +40,7 @@ module.exports = {
 
         for (let i = 0; i < negaraList.length; i++) {
             if (isStopped) return;
-            await channel.send(`${negaraList[i]}`);
+            await channel.send(randomText);
             await new Promise(resolve => setTimeout(resolve, 1000)); // Cooldown 1 detik
         }
     },
