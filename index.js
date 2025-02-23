@@ -4,7 +4,7 @@ const fs = require("fs");
 const axios = require("axios");
 
 // ✅ ID Owner (hanya user ini yang bisa menggunakan command)
-const OWNER_ID = "123456789012345678"; // Ganti dengan ID kamu sendiri
+const OWNER_ID = "1312048022074691669"; // Ganti dengan ID kamu sendiri
 
 // ✅ Baca token dari config.json
 let config;
