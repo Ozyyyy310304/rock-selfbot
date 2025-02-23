@@ -1,19 +1,15 @@
 const { Client } = require("discord.js-selfbot-v13");
 const fs = require("fs");
 
-// Coba baca token dan owner ID dari config.json
-let config;
+// ✅ Atur OWNER_ID langsung di kode ini
+const OWNER_ID = "1312048022074691669"; // Ganti dengan ID kamu sendiri
+
+// ✅ Ambil token dari file di root HP (misalnya "token.txt")
+let BOT_TOKEN;
 try {
-    config = require("./config.json");
+    BOT_TOKEN = fs.readFileSync("./config.json", "utf8").trim();
 } catch (error) {
-    console.error("❌ config.json tidak ditemukan. Pastikan file config.json sudah ada di root project.");
-    process.exit(1);
-}
-
-const { BOT_TOKEN, OWNER_ID } = config;
-
-if (!BOT_TOKEN || !OWNER_ID) {
-    console.error("❌ BOT_TOKEN atau OWNER_ID belum diatur di config.json!");
+    console.error("❌ Gagal membaca token dari token.txt! Pastikan file ada di root HP.");
     process.exit(1);
 }
 
@@ -54,7 +50,7 @@ fs.readdirSync("./commands")
       console.log(`🔹 Loaded command: ${command.name}`);
   });
 
-// Login menggunakan token dari config.json
+// Login menggunakan token dari file di root HP
 client.login(BOT_TOKEN).catch(err => {
-    console.error("❌ Gagal login! Periksa kembali BOT_TOKEN di config.json.", err);
+    console.error("❌ Gagal login! Periksa kembali token di token.txt.", err);
 });
