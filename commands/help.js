@@ -7,7 +7,9 @@ module.exports = {
     
     execute(channel, message, client, args) {
         try {
-            const { prefix } = require("../config");
+            const config = require("../config.json");
+const prefix = config.prefix || "!"; // Default ke "!" jika tidak ada prefix di config.json
+
 
             // Baca daftar file dalam folder commands
             const commandFiles = fs.readdirSync(path.resolve(__dirname, "../commands"))
