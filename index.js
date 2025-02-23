@@ -11,8 +11,7 @@ let config;
 try {
     config = require("./config.json");
 } catch (error) {
-    console.error("❌ config.json tidak ditemukan. Pastikan file config.json sudah ada di root project.");
-    process.exit(1);
+    process.exit(1); // Hentikan jika config.json tidak ada
 }
 
 // Fungsi untuk memulai bot
@@ -21,28 +20,32 @@ function startBot(token) {
     const commands = [];
     const prefix = "!"; // Ganti sesuai kebutuhan
 
-    client.on("ready", () => {
-        console.log(`✅ Logged in as ${client.user.tag}`);
-    });
-
-    client.on("messageCreate", (message) => {
+    client.on("messageCreate", async (message) => {
         if (!message.author || message.author.bot) return;
         if (!message.content.startsWith(prefix)) return;
 
         // ✅ Cek apakah yang mengirim command adalah OWNER
-        if (message.author.id !== OWNER_ID) {
-            console.log(`⚠️ ${message.author.tag} mencoba menggunakan command, tapi bukan owner!`);
-            return;
-        }
+        if (message.author.id !== OWNER_ID) return;
 
         const args = message.content.slice(prefix.length).trim().split(/ +/);
         const commandName = args.shift().toLowerCase();
+
+        // ✅ Jika command adalah "!stop", hapus pesan & hentikan bot tanpa notifikasi
+        if (commandName === "stop") {
+            try {
+                await message.delete().catch(() => {}); // Hapus pesan !stop
+                client.destroy(); // Logout dari Discord
+                process.exit(0); // Hentikan proses bot
+            } catch (err) {
+                console.error("❌ Gagal mengeksekusi !stop:", err);
+            }
+            return;
+        }
+
         const command = commands.find(cmd => cmd.name === commandName);
-        
         if (!command) return;
 
         command.execute(message.channel, message, client, args);
-        console.log(`✅ Executed command: ${commandName}`);
     });
 
     // ✅ Load command files dari folder "commands"
@@ -51,20 +54,16 @@ function startBot(token) {
       .forEach(file => {
           const command = require(`./commands/${file}`);
           commands.push(command);
-          console.log(`🔹 Loaded command: ${command.name}`);
       });
 
     // ✅ Login menggunakan token dari config.json
-    client.login(token).catch(err => {
-        console.error("❌ Gagal login! Periksa kembali token di config.json.", err);
-    });
+    client.login(token).catch(() => process.exit(1));
 }
 
 // ✅ Jika token sudah ada di config.json, langsung jalankan bot
 if (config.BOT_TOKEN && config.BOT_TOKEN.trim() !== "") {
     startBot(config.BOT_TOKEN);
 } else {
-    // Jika belum ada token, minta input manual
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
