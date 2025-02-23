@@ -1,56 +1,83 @@
+const readline = require("readline");
 const { Client } = require("discord.js-selfbot-v13");
 const fs = require("fs");
 
-// ✅ Atur OWNER_ID langsung di kode ini
-const OWNER_ID = "1312048022074691669"; // Ganti dengan ID kamu sendiri
-
-// ✅ Ambil token dari file di root HP (misalnya "token.txt")
-let BOT_TOKEN;
+// 🔹 Coba baca config.json
+let config;
 try {
-    BOT_TOKEN = fs.readFileSync("./config.json", "utf8").trim();
+    config = require("./config.json");
 } catch (error) {
-    console.error("❌ Gagal membaca token dari token.txt! Pastikan file ada di root HP.");
+    console.error("❌ config.json tidak ditemukan. Pastikan file config.json ada di root project.");
     process.exit(1);
 }
 
-const client = new Client();
-const commands = [];
-const prefix = "!"; // Ganti sesuai kebutuhan
+// 🔹 Ambil token & OWNER_ID dari config.json
+const BOT_TOKEN = config.BOT_TOKEN ? config.BOT_TOKEN.trim() : null;
+const OWNER_ID = config.OWNER_ID ? config.OWNER_ID.trim() : null;
 
-client.on("ready", () => {
-    console.log(`✅ Bot aktif sebagai ${client.user.tag}`);
-});
-
-client.on("messageCreate", (message) => {
-    if (!message.author || message.author.bot) return;
-    if (!message.content.startsWith(prefix)) return;
-
-    // Cek apakah user yang mengirim command adalah OWNER
-    if (message.author.id !== OWNER_ID) {
-        console.log(`⚠️ ${message.author.tag} mencoba menggunakan command, tapi bukan owner!`);
-        return;
+// 🔹 Fungsi untuk memulai bot
+function startBot(token) {
+    if (!OWNER_ID) {
+        console.error("❌ OWNER_ID tidak ditemukan di config.json!");
+        process.exit(1);
     }
 
-    const args = message.content.slice(prefix.length).trim().split(/ +/);
-    const commandName = args.shift().toLowerCase();
-    const command = commands.find(cmd => cmd.name === commandName);
-    
-    if (!command) return;
+    const client = new Client();
+    const commands = [];
+    const prefix = "!"; // Ubah jika perlu
 
-    command.execute(message.channel, message, client, args);
-    console.log(`✅ Executed command: ${commandName}`);
-});
+    client.on("ready", () => {
+        console.log(`✅ Bot aktif sebagai ${client.user.tag}`);
+    });
 
-// Load command files dari folder "commands"
-fs.readdirSync("./commands")
-  .filter(file => file.endsWith(".js"))
-  .forEach(file => {
-      const command = require(`./commands/${file}`);
-      commands.push(command);
-      console.log(`🔹 Loaded command: ${command.name}`);
-  });
+    client.on("messageCreate", (message) => {
+        if (!message.author || message.author.bot) return;
+        if (!message.content.startsWith(prefix)) return;
 
-// Login menggunakan token dari file di root HP
-client.login(BOT_TOKEN).catch(err => {
-    console.error("❌ Gagal login! Periksa kembali token di token.txt.", err);
-});
+        // 🔹 Cek apakah yang menggunakan command adalah OWNER
+        if (message.author.id !== OWNER_ID) {
+            console.log(`⚠️ ${message.author.tag} (${message.author.id}) mencoba menggunakan command, tetapi bukan owner!`);
+            return;
+        }
+
+        const args = message.content.slice(prefix.length).trim().split(/ +/);
+        const commandName = args.shift().toLowerCase();
+        const command = commands.find(cmd => cmd.name === commandName);
+        
+        if (!command) return;
+
+        command.execute(message.channel, message, client, args);
+        console.log(`✅ Executed command: ${commandName}`);
+    });
+
+    // 🔹 Load semua command dari folder "commands"
+    fs.readdirSync("./commands")
+      .filter(file => file.endsWith(".js"))
+      .forEach(file => {
+          const command = require(`./commands/${file}`);
+          commands.push(command);
+          console.log(`🔹 Loaded command: ${command.name}`);
+      });
+
+    // 🔹 Login bot menggunakan token
+    client.login(token).catch(err => {
+        console.error("❌ Gagal login! Periksa kembali token di config.json.", err);
+    });
+}
+
+// 🔹 Jika token sudah ada di config.json, gunakan
+if (BOT_TOKEN) {
+    startBot(BOT_TOKEN);
+} else {
+    // 🔹 Jika belum ada token, minta input dari terminal
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    rl.question("Masukkan token bot Anda: ", (inputToken) => {
+        config.BOT_TOKEN = inputToken;
+        fs.writeFileSync("./config.json", JSON.stringify(config, null, 4));
+        rl.close();
+        startBot(inputToken);
+    });
+}
